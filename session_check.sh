@@ -7,10 +7,10 @@ is_logged_in() {
     # Se ainda tem formulario de login -> nao logado
     echo "$page" | grep -qi "sign_in" && return 1
 
-    # Indicadores de login
-    echo "$page" | grep -qi "/user" && return 0
-    echo "$page" | grep -qi "logout" && return 0
-    echo "$page" | grep -qi "exit" && return 0
+    # Indicadores de sessao ativa
+    echo "$page" | grep -qi "/user"   && return 0
+    echo "$page" | grep -qi "logout"  && return 0
+    echo "$page" | grep -qi "exit"    && return 0
     echo "$page" | grep -qi "\[level" && return 0
 
     return 1
@@ -19,14 +19,14 @@ is_logged_in() {
 extract_username() {
     page="$1"
 
-    acc=$(echo "$page" | sed -n "s/.*class='white'>\([^<]*\)<.*/\1/p" | head -n1)
+    acc=`echo "$page" | sed -n "s/.*class='white'>\([^<]*\)<.*/\1/p" | head -n1`
     [ -n "$acc" ] && echo "$acc" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' && return
 
-    acc=$(echo "$page" | grep -o -E "[A-Za-z0-9_.][A-Za-z0-9_. -]*\[level" \
-        | sed 's/\[level//' | sed 's/[[:space:]]*$//' | head -n1)
+    acc=`echo "$page" | grep -o -E "[A-Za-z0-9_.][A-Za-z0-9_. -]*\[level" \
+        | sed 's/\[level//' | sed 's/[[:space:]]*$//' | head -n1`
     [ -n "$acc" ] && echo "$acc" && return
 
-    acc=$(echo "$page" | sed -n "s/.*href='\/user\/[0-9]*'>\([^<]*\)<\/a>.*/\1/p" | head -n1)
+    acc=`echo "$page" | sed -n "s/.*href='\/user\/[0-9]*'>\([^<]*\)<\/a>.*/\1/p" | head -n1`
     [ -n "$acc" ] && echo "$acc" && return
 
     echo ""
@@ -44,7 +44,7 @@ test_login() {
         --data-urlencode "pass=${_pass}" \
         "${_url}/?sign_in=1" > /dev/null
 
-    _page=$(curl -s -L -c "$_cookie" -b "$_cookie" "${_url}/user")
+    _page=`curl -s -L -c "$_cookie" -b "$_cookie" "${_url}/user"`
 
     rm -f "$_cookie"
 
