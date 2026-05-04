@@ -3,6 +3,12 @@
 # Shebang #!/bin/sh garante que o script SEMPRE executa
 # Toybox e detectado internamente para melhor desempenho
 
+# Detecta e usa toybox se disponivel
+TOYBOX="$HOME/.multcf/toybox"
+if [ ! -x "$TOYBOX" ]; then
+    TOYBOX="sh"
+fi
+export TOYBOX
 
 _dir=$(dirname "$0")
 TWMDIR=$(cd "$_dir" && pwd)
@@ -56,7 +62,7 @@ fi
 
 # Conta apenas linhas com pipe (formato valido: srv|user|encoded)
 total=$(grep -c '|' "$ACCOUNTS_FILE" 2>/dev/null || echo 0)
-    printf "${CYAN}TWM Multi-contas -- %s conta(s)${RESET}\n\n" "$total"
+printf "${CYAN}TWM Multi-contas — %s conta(s) [%s]${RESET}\n\n" "$total" "$TOYBOX"
 
 n=0
 
@@ -72,7 +78,7 @@ while IFS='|' read -r srv user encoded <&3; do
     n=$((n + 1))
     url=$(server_url "$srv")
     tag=$(server_tag "$srv")
-    acc_id=`echo "${tag}_${user}" | tr ' ' '_'`
+    acc_id="${tag}_${user}"
     acc_dir="$HOME/.twm/${acc_id}"
     status_file="$STATUS_DIR/${acc_id}.status"
     pid_file="$STATUS_DIR/${acc_id}.pid"
@@ -95,7 +101,10 @@ while IFS='|' read -r srv user encoded <&3; do
     echo "starting" > "$status_file"
 
     # Lanca worker desanexado
-    nohup sh "$TWMDIR/worker.sh" \
+    # TOYBOX passado explicitamente — worker nao precisa de exec/fallback
+    # _TOYBOX_RUNNING=1 evita que worker tente re-executar com toybox
+    TOYBOX="$TOYBOX" _TOYBOX_RUNNING="1" \
+    nohup "$TOYBOX" "$TWMDIR/worker.sh" \
         "$srv" "$user" "$encoded" "$tag" \
         "https://$url" "$acc_dir" "$status_file" "$RUN" \
         < /dev/null >> "$log_file" 2>&1 &
@@ -138,7 +147,7 @@ while true; do
         case "$srv" in ''|\#*) continue ;; esac
         [ -z "$user" ] && continue
         tag=$(server_tag "$srv")
-        acc_id=`echo "${tag}_${user}" | tr ' ' '_'`
+        acc_id="${tag}_${user}"
         status_file="$STATUS_DIR/${acc_id}.status"
         pid_file="$STATUS_DIR/${acc_id}.pid"
         status=$(cat "$status_file" 2>/dev/null || echo "?")
