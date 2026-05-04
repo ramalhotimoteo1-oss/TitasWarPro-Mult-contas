@@ -1,9 +1,9 @@
 #!/bin/sh
 # shellcheck disable=SC1091
 # twm.sh - Worker de conta individual (nao interativo)
+# Executado pelo worker.sh com o shell correto via $TOYBOX
 
-# Toybox nao e mais usado como interpretador
-# Scripts executados pelo sh do sistema
+TOYBOX="${TOYBOX:-sh}"
 
 if [ -z "$TWMDIR" ]; then
     _d=$(dirname "$0")
@@ -42,6 +42,9 @@ case "$UR" in
 esac
 
 mkdir -p "$TMP"
+
+# Grava status imediatamente
+[ -n "$TWM_STATUS_FILE" ] && echo "loading" > "$TWM_STATUS_FILE"
 
 # Carrega modulos
 . "$TWMDIR/info.sh"
