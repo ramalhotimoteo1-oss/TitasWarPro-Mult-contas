@@ -85,11 +85,9 @@ time_exit() {
 # Usa TMP_COOKIE se definido; caso contrario opera sem cookie (fase pre-login)
 run_curl() {
     if [ -n "$TMP_COOKIE" ]; then
-        curl -s -L --max-time 30 --connect-timeout 15 \
-            -A "$vUserAgent" -c "$TMP_COOKIE" -b "$TMP_COOKIE" "$@"
+        curl -s -L -A "$vUserAgent" -c "$TMP_COOKIE" -b "$TMP_COOKIE" "$@"
     else
-        curl -s -L --max-time 30 --connect-timeout 15 \
-            -A "$vUserAgent" "$@"
+        curl -s -L -A "$vUserAgent" "$@"
     fi
 }
 
