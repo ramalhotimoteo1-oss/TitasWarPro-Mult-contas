@@ -1,7 +1,9 @@
 #!/bin/sh
 # worker.sh - Loop de uma conta individual
-# Chamado pelo play.sh via nohup — completamente desanexado do terminal pai
-# Argumentos: SRV USER ENCODED_CREDS TAG URL ACC_DIR STATUS_FILE RUN
+# Recebe TOYBOX e _TOYBOX_RUNNING via ambiente do play.sh
+# Nao precisa de fallback exec — play.sh ja garante o shell correto
+
+TOYBOX="${TOYBOX:-sh}"
 
 TWM_SRV="$1"
 TWM_USER="$2"
@@ -12,23 +14,23 @@ TWM_ACC_DIR="$6"
 TWM_STATUS_FILE="$7"
 RUN="${8:--boot}"
 
-export TWM_SRV TWM_USER TWM_TAG TWM_URL TWM_ACC_DIR TWM_STATUS_FILE
+export TWM_SRV TWM_USER TWM_TAG TWM_URL TWM_ACC_DIR TWM_STATUS_FILE TOYBOX
 
-_dir=`dirname "$0"`
-TWMDIR=`cd "$_dir" && pwd`
+_dir=$(dirname "$0")
+TWMDIR=$(cd "$_dir" && pwd)
 unset _dir
 export TWMDIR
 
 PID_FILE="${TWM_STATUS_FILE%.status}.pid"
 
-# Salva o PID DESTE processo (worker.sh em si)
+# Salva PID imediatamente
 echo "$$" > "$PID_FILE"
 echo "starting" > "$TWM_STATUS_FILE"
 
-# Evita Signal 9 por inatividade no Termux
+# Wake lock proprio — evita Signal 9 por inatividade no Termux
 termux-wake-lock 2>/dev/null
 
-printf "[%s] %s — worker PID=%s iniciado\n" "$TWM_TAG" "$TWM_USER" "$$"
+printf "[%s] %s — worker PID=%s\n" "$TWM_TAG" "$TWM_USER" "$$"
 
 # Prepara credencial
 mkdir -p "$TWM_ACC_DIR"
@@ -39,7 +41,7 @@ unset TWM_ENCODED
 # Loop infinito — reinicia twm.sh se encerrar
 while true; do
     echo "running" > "$TWM_STATUS_FILE"
-    sh "$TWMDIR/twm.sh" "$RUN" < /dev/null
+    "$TOYBOX" "$TWMDIR/twm.sh" "$RUN" < /dev/null
     echo "restarting" > "$TWM_STATUS_FILE"
     printf "[%s] %s — reiniciando em 15s\n" "$TWM_TAG" "$TWM_USER"
     sleep 15
