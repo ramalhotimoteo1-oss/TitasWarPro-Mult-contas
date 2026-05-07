@@ -1,110 +1,83 @@
-# Wartank Bot v1.3.0
+# TWM — Titans War Macro v3.9.28
 
-Bot automático para wartank-pt.net — funciona no Android via Termux.
+Bot multi-contas para [titanswar.net](https://titanswar.net) e todos os servidores. Automatiza as tarefas diárias do jogo rodando em segundo plano no Termux.
 
----
-
-## PARTE 1 — Instalar o Termux
-
-**O que é o Termux?**
-Terminal Linux para Android. O bot corre dentro dele.
-
-**Passo 1** — Instala o Termux pela F-Droid (não usar a Play Store):
-
-```
-https://f-droid.org/packages/com.termux/
-```
+**Requisito mínimo:** level 16+ e 50 pontos de treinamento para algumas batalhas.
 
 ---
 
-**Passo 2** — Abre o Termux e actualiza:
+## O que o bot faz
 
-```bash
-pkg update
-```
+- **Arena** — joga automaticamente até acabar a mana
+- **Carreira** — batalha e coleta recompensas sempre que disponível
+- **Coliseu** — batalha de 00:00 às 04:00 todo dia; modo exclusivo disponível
+- **Caverna** — todas as funções, incluindo loop contínuo
+- **Campanha** — 100% funcional
+- **Masmorra do Clã** — entra sempre que disponível
+- **Rei dos Imortais** — participa com modo sniper de finalização
+- **Eventos diários** — todos funcionando, incluindo eventos temporários
+- **Troca de ouro/prata** — sempre que disponível
+- **Cabana do Sábio** — coleta missões, coleções e relíquias
 
-```bash
-pkg upgrade -y
-```
+**Segurança:** sua senha é criptografada localmente em base64 e nunca é enviada para nenhum servidor externo.
 
 ---
 
-**Passo 3** — Instala as dependências:
+## Instalação no Termux
+
+> Instale o Termux pela [F-Droid](https://f-droid.org/packages/com.termux/) — a versão da Play Store está desatualizada.
+
+---
+
+### 1. Atualiza o Termux
+
+Mantém os pacotes do sistema em dia. Responda `Y` para qualquer confirmação e pressione `ENTER` para opções múltiplas.
 
 ```bash
-pkg install git
-```
-
-```bash
-pkg install curl
-```
-
-```bash
-pkg install bash
+pkg update && pkg upgrade -y
 ```
 
 ---
 
-**Passo 4** — Verifica a instalação:
+### 2. Instala as dependências
+
+Instala `curl`, `git`, `jq` e demais utilitários necessários para o bot funcionar.
 
 ```bash
-curl --version && bash --version && git --version
-```
-
-> Se aparecerem versões sem erros, está pronto.
-
----
-
-## PARTE 2 — Instalar o Bot
-
-**Passo 1** — Vai para a pasta home:
-
-```bash
-cd ~
+pkg install git curl wget jq -y
 ```
 
 ---
 
-**Passo 2** — Clona o repositório directamente como `Wartank-Macro`:
+### 3. Baixa o bot
+
+Clona o repositório na pasta atual do Termux.
 
 ```bash
 git clone https://github.com/ramalhotimoteo1-oss/TitasWar-Sung-Jinwoo.git
 ```
 
-> Substitui o URL pelo repositório real do bot.
-> O nome `Wartank-Macro` é obrigatório — não cria pasta dentro de pasta.
-
 ---
 
-**Passo 3** — Entra na pasta:
+### 4. Entra na pasta do bot
 
 ```bash
-cd ~/TitasWar-Sung-Jinwoo
+cd TitasWar-Sung-Jinwoo
 ```
 
 ---
 
-**Passo 4** — Dá permissão de execução:
+### 5. Dá permissão de execução aos scripts
 
 ```bash
-chmod +x *.sh
+chmod +x play.sh setup.sh stop.sh worker.sh twm.sh
 ```
 
 ---
 
-**Passo 5** — Confirma que os ficheiros estão lá:
+### 6. Cadastra as contas
 
-```bash
-ls
-```
-
-> Deves ver: `play.sh`, `wartank.sh`, `setup.sh`, `core.sh`, etc.
-
----
-
-## PARTE 3 — Configurar a Conta
-
-**Passo 1** — Abre o menu de contas:
+Abre o menu interativo para adicionar, listar ou remover contas. Cada conta é salva com as credenciais criptografadas em `accounts.conf`.
 
 ```bash
 ./setup.sh
@@ -112,19 +85,9 @@ ls
 
 ---
 
-**Passo 2** — Escolhe `2) Adicionar`
+### 7. Inicia o bot
 
-**Passo 3** — Escreve o teu username
-
-**Passo 4** — Escreve a tua password
-
-> A password não aparece enquanto escreves — é normal e seguro.
-
----
-
-## PARTE 4 — Iniciar o Bot
-
-**Para iniciar:**
+Inicia todos os workers em paralelo e abre o monitor de status.
 
 ```bash
 ./play.sh
@@ -132,15 +95,41 @@ ls
 
 ---
 
-**Para parar — escreve no terminal:**
+## Modos de execução
 
+Modo padrão — roda todas as tarefas normalmente:
+
+```bash
+./play.sh
 ```
-stop
+
+Modo caverna — foca exclusivamente na caverna:
+
+```bash
+./play.sh -cv
+```
+
+Modo coliseu — prioriza o coliseu:
+
+```bash
+./play.sh -cl
 ```
 
 ---
 
-**Para parar à força:**
+## Monitorar uma conta específica
+
+Exibe o log em tempo real. Substitua `BR_NomeConta` pelo tag e nome da conta.
+
+```bash
+tail -f ~/.twm/BR_NomeConta/twm.log
+```
+
+---
+
+## Parar o bot
+
+Para todos os workers de todas as contas.
 
 ```bash
 ./stop.sh
@@ -148,229 +137,16 @@ stop
 
 ---
 
-## PARTE 5 — Mudar de Conta
+## Desinstalar
 
-**Apaga as credenciais da conta anterior:**
-
-```bash
-rm -f ~/Wartank-Macro/.tmp/cript_file
-```
+Remove todos os arquivos do bot e os dados gerados.
 
 ```bash
-rm -f ~/Wartank-Macro/.tmp/cookies.txt
-```
-
-**Inicia o bot — vai pedir nova conta:**
-
-```bash
-./play.sh
+cd ~ && rm -rf TitasWar-Sung-Jinwoo ~/.twm
 ```
 
 ---
 
-## PARTE 6 — Comandos Durante a Execução
+## ☕ Donates / Doações
 
-Enquanto o bot está a correr, escreve no terminal:
-
-**Abrir configurações:**
-
-```
-config
-```
-
-**Ver estado actual:**
-
-```
-status
-```
-
-**Parar o bot:**
-
-```
-stop
-```
-
----
-
-## PARTE 7 — Configurações
-
-O ficheiro `config.cfg` é criado automaticamente na primeira execução.
-
-**Para editar:**
-
-```bash
-nano config.cfg
-```
-
-**Opções disponíveis:**
-
-```
-FUNC_battle=y          → Batalha normal
-FUNC_missions=y        → Recolha de missões
-FUNC_pvp=y             → PvP
-FUNC_pvp_hour=21       → Hora do PvP (0-23)
-FUNC_pve=y             → Batalhas históricas
-FUNC_cw=y              → Guerra de clã
-FUNC_dm=y              → Disputa (Deathmatch)
-FUNC_convoy=y          → Escolta
-FUNC_buildings=y       → Recolha da Base
-FUNC_assault=y         → Missão especial (sempre Abrigo)
-FUNC_company=y         → Missões da Divisão
-
-BATTLE_LA=3            → Segundos entre disparos
-BATTLE_SHOTS=9         → Disparos por sessão (9 = 3 inimigos)
-FUEL_MIN=0             → Combustível mínimo
-ASSAULT_MIN_MEMBERS=1  → Membros para iniciar missão especial
-```
-
-**Guardar após editar:**
-
-```
-Ctrl+O  →  Enter  →  Ctrl+X
-```
-
----
-
-## PARTE 8 — Ver Logs
-
-**Log em tempo real:**
-
-```bash
-tail -f ~/Wartank-Macro/.tmp/bot.log
-```
-
-**Últimas 50 linhas:**
-
-```bash
-tail -50 ~/Wartank-Macro/.tmp/bot.log
-```
-
-**Pesquisar erros:**
-
-```bash
-grep "ERRO" ~/Wartank-Macro/.tmp/bot.log
-```
-
----
-
-## PARTE 9 — Manter o Bot Activo
-
-**Para o bot não ser suspenso com o ecrã desligado:**
-
-```bash
-termux-wake-lock
-```
-
-> Corre este comando antes de `./play.sh`.
-
----
-
-## PARTE 10 — Actualizar o Bot
-
-**Para actualizar com versão mais recente:**
-
-```bash
-cd ~/Wartank-Macro
-```
-
-```bash
-git pull
-```
-
-```bash
-chmod +x *.sh
-```
-
----
-
-## PARTE 11 — Resolver Problemas
-
----
-
-**Bot fica na mesma conta mesmo apagando credenciais**
-
-Apaga os dois ficheiros:
-
-```bash
-rm -f ~/Wartank-Macro/.tmp/cript_file
-```
-
-```bash
-rm -f ~/Wartank-Macro/.tmp/cookies.txt
-```
-
----
-
-**"Config não encontrado. A criar..." em loop**
-
-Garante que entras sempre na pasta antes de iniciar:
-
-```bash
-cd ~/Wartank-Macro
-```
-
-```bash
-./play.sh
-```
-
----
-
-**Bot não combate**
-
-Verifica o log:
-
-```bash
-tail -50 ~/Wartank-Macro/.tmp/bot.log
-```
-
-Causas mais comuns:
-- Combustível abaixo de 90 (mínimo para 1 inimigo)
-- `FUNC_battle=n` no `config.cfg`
-
----
-
-**Sessão expira com frequência**
-
-Normal em ligações móveis — o bot reconecta automaticamente.
-Se falhar 3 vezes seguidas, para e reinicia com:
-
-```bash
-./play.sh
-```
-
----
-
-**Pasta Wartank-Macro dentro de Wartank-Bot**
-
-Apaga e clona de novo correctamente:
-
-```bash
-cd ~
-```
-
-```bash
-rm -rf Wartank-Bot
-```
-
-```bash
-git clone https://github.com/SEU_USER/SEU_REPO.git Wartank-Macro
-```
-
----
-
-## Resumo Rápido
-
-| O que fazer | Comando |
-|---|---|
-| Actualizar Termux | `pkg update && pkg upgrade -y` |
-| Instalar git | `pkg install git` |
-| Instalar curl/bash | `pkg install curl bash` |
-| Clonar o bot | `git clone URL Wartank-Macro` |
-| Entrar na pasta | `cd ~/Wartank-Macro` |
-| Permissões | `chmod +x *.sh` |
-| Adicionar conta | `./setup.sh` |
-| Iniciar | `./play.sh` |
-| Parar | escreve `stop` |
-| Ver log | `tail -f .tmp/bot.log` |
-| Wake lock | `termux-wake-lock` |
-| Actualizar bot | `git pull` |
+ramirosh015@gmail.com 
